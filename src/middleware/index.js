@@ -1,6 +1,6 @@
 // validationMiddleware.js
 const { validatePayload } = require('../validators');
-const logLais = require('../Models/v1/Log')
+const logLais = require('../models/v1/log')
 
 async function validationMiddleware(req, res, next) {
 
