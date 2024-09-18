@@ -24,15 +24,16 @@ const mediaLinkPayloadSchema = Joi.object({
   type: Joi.string().valid('application/vnd.lime.media-link+json').required(),
   content: Joi.object({
     type: Joi.string().required(),
-    size: Joi.number().required(),
+    size: Joi.number().optional(),
     uri: Joi.string().uri().required(),
-    title: Joi.string().allow('').required()
+    title: Joi.string().optional()
   }).required(),
   id: Joi.string().optional(),
   from: Joi.string().required(),
   to: Joi.string().required(),
   metadata: Joi.object({
     '#blipChat.voice': Joi.string().valid('True').optional(),
+    '#wa.voice': Joi.string().optional(),
     traceparent: Joi.string().required(),
     '#uniqueId': Joi.string().guid().optional(),
     '#tunnel.originator': Joi.string().required(),
