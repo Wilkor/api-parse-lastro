@@ -9,10 +9,13 @@ const textPayloadSchema = Joi.object({
   to: Joi.string().required(),
   metadata: Joi.object({
     traceparent: Joi.string().required(),
-    '#uniqueId': Joi.string().guid().required(),
-    '#date_processed': Joi.string().required(),
+    '#uniqueId': Joi.string().guid().optional(),
+    '#date_processed': Joi.string().optional(),
     '#tunnel.originator':Joi.string().required(),
-    date_created: Joi.string().required()
+    '#tunnel.originalFrom':Joi.string().optional(),
+    '#tunnel.originalTo':Joi.string().optional(),
+    '#tunnel.owner':Joi.string().optional(),
+    date_created: Joi.string().optional()
   }).required()
 });
 
@@ -31,10 +34,14 @@ const mediaLinkPayloadSchema = Joi.object({
   metadata: Joi.object({
     '#blipChat.voice': Joi.string().valid('True').optional(),
     traceparent: Joi.string().required(),
-    '#uniqueId': Joi.string().guid().required(),
-    '#date_processed': Joi.string().required(),
+    '#uniqueId': Joi.string().guid().optional(),
     '#tunnel.originator':Joi.string().required(),
-    date_created: Joi.string().required()
+    '#uniqueId': Joi.string().guid().optional(),
+    '#date_processed': Joi.string().optional(),
+    '#tunnel.originalFrom':Joi.string().optional(),
+    '#tunnel.originalTo':Joi.string().optional(),
+    '#tunnel.owner':Joi.string().optional(),
+    date_created: Joi.string().optional()
   }).required()
 });
 
