@@ -18,15 +18,10 @@ const receive = async (req, res) => {
     try {
 
         const resultApp = await configLastroDb.findById(ObjectId(auth));
-
         const messageDTO = new MessageDTO(body);
         const response = messageDTO.toResponseFormat();
 
-        console.log("response", JSON.stringify(response))
-
         const resultCallLastro = await Services.sendMessageToLastro(response, resultApp);
-
-        console.log("resultCallLastro", JSON.stringify(resultCallLastro))
 
         res.status(200).json({ data: resultCallLastro.data });
 

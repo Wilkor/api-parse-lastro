@@ -19,7 +19,7 @@ const sendMessageToBlip = async (text, contract, key, from) => {
 }
 
 const sendMessageToLastro = async (body, {url, token}) => {
-
+    
     const result = await axios.post(url, body,{
         headers: {
             'Authorization': token
