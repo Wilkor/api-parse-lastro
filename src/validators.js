@@ -4,7 +4,7 @@ const Joi = require('joi');
 const textPayloadSchema = Joi.object({
   type: Joi.string().valid('text/plain').required(),
   content: Joi.string().required(),
-  id: Joi.string().guid().required(),
+  id: Joi.string().optional(),
   from: Joi.string().required(),
   to: Joi.string().required(),
   metadata: Joi.object({
@@ -15,6 +15,7 @@ const textPayloadSchema = Joi.object({
     '#tunnel.originalFrom':Joi.string().optional(),
     '#tunnel.originalTo':Joi.string().optional(),
     '#tunnel.owner':Joi.string().optional(),
+    '#wa.timestamp':Joi.string().optional(),
     date_created: Joi.string().optional()
   }).required()
 });
@@ -28,7 +29,7 @@ const mediaLinkPayloadSchema = Joi.object({
     uri: Joi.string().uri().required(),
     title: Joi.string().allow('').required()
   }).required(),
-  id: Joi.string().guid().required(),
+  id: Joi.string().optional(),
   from: Joi.string().required(),
   to: Joi.string().required(),
   metadata: Joi.object({
@@ -41,6 +42,7 @@ const mediaLinkPayloadSchema = Joi.object({
     '#tunnel.originalFrom':Joi.string().optional(),
     '#tunnel.originalTo':Joi.string().optional(),
     '#tunnel.owner':Joi.string().optional(),
+    '#wa.timestamp':Joi.string().optional(),
     date_created: Joi.string().optional()
   }).required()
 });
