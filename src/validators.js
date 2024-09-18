@@ -75,6 +75,8 @@ const whatsappImagePayloadSchema = Joi.object({
 function validatePayload(payload) {
   let validationSchema;
 
+   console.log("antes de tratar", payload)
+
   if (payload.messaging_product === 'whatsapp' && payload.text) {
     validationSchema = whatsappTextPayloadSchema;
   } else if (payload.messaging_product === 'whatsapp' && payload.image) {
