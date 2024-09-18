@@ -35,9 +35,8 @@ const receiveLastro = async (req, res) => {
 
     const auth = req.headers['authorization'];
 
-    const { to, text: { body }, contract, token } = req.body;
+    const { to, text: { body }, contract, token, image } = req.body;
 
-    console.log(JSON.stringify(req.body))
 
     try {
 
@@ -48,11 +47,19 @@ const receiveLastro = async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized' })
         }
 
+        if (image) {
+
+            await Services.sendMessageToBlipImage(image, contract, token, to);
+            return res.status(200).json({ data: req.body });
+
+        }
         await Services.sendMessageToBlip(body, contract, token, to);
 
         res.status(200).json({ data: req.body })
     } catch (e) {
-        return res.status(401).json({ message: 'Unauthorized' })
+
+        console.log(e)
+        return res.status(401).json({ message: 'Unauthorized', error: e})
     }
 
 

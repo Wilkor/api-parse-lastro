@@ -18,9 +18,34 @@ const sendMessageToBlip = async (text, contract, key, from) => {
     return result;
 }
 
-const sendMessageToLastro = async (body, {url, token}) => {
-    
-    const result = await axios.post(url, body,{
+
+const sendMessageToBlipImage = async (image, contract, key, from) => {
+
+    const { caption, uri } = image;
+
+    const url = ` https://${contract}.http.msging.net/messages`;
+
+    const result = await axios.post(url, {
+        "id": uuid(),
+        "to": from,
+        "type": "application/vnd.lime.web-link+json",
+        "content": {
+            "uri": uri,
+            "target": "self",
+            "text": caption
+        }
+    }, {
+        headers: {
+            'Authorization': key
+        }
+    })
+    return result;
+}
+
+
+const sendMessageToLastro = async (body, { url, token }) => {
+
+    const result = await axios.post(url, body, {
         headers: {
             'Authorization': token
         }
@@ -34,5 +59,6 @@ const sendMessageToLastro = async (body, {url, token}) => {
 
 module.exports = {
     sendMessageToBlip,
-    sendMessageToLastro
+    sendMessageToLastro,
+    sendMessageToBlipImage
 }

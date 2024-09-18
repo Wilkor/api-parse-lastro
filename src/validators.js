@@ -1,62 +1,15 @@
 const Joi = require('joi');
 
-// Esquema para o primeiro tipo de payload (texto simples)
-const textPayloadSchema = Joi.object({
-  type: Joi.string().valid('text/plain').required(),
-  content: Joi.string().required(),
-  id: Joi.string().optional(),
-  from: Joi.string().required(),
-  to: Joi.string().required(),
-  metadata: Joi.object({
-    traceparent: Joi.string().required(),
-    '#uniqueId': Joi.string().guid().optional(),
-    '#date_processed': Joi.string().optional(),
-    '#tunnel.originator':Joi.string().required(),
-    '#tunnel.originalFrom':Joi.string().optional(),
-    '#tunnel.originalTo':Joi.string().optional(),
-    '#tunnel.owner':Joi.string().optional(),
-    '#wa.timestamp':Joi.string().optional(),
-    date_created: Joi.string().optional()
-  }).required()
-});
-
-// Esquema para os payloads com media-link
-const mediaLinkPayloadSchema = Joi.object({
-  type: Joi.string().valid('application/vnd.lime.media-link+json').required(),
-  content: Joi.object({
-    type: Joi.string().required(),
-    size: Joi.number().required(),
-    uri: Joi.string().uri().required(),
-    title: Joi.string().allow('').required()
-  }).required(),
-  id: Joi.string().optional(),
-  from: Joi.string().required(),
-  to: Joi.string().required(),
-  metadata: Joi.object({
-    '#blipChat.voice': Joi.string().valid('True').optional(),
-    traceparent: Joi.string().required(),
-    '#uniqueId': Joi.string().guid().optional(),
-    '#tunnel.originator':Joi.string().required(),
-    '#uniqueId': Joi.string().guid().optional(),
-    '#date_processed': Joi.string().optional(),
-    '#tunnel.originalFrom':Joi.string().optional(),
-    '#tunnel.originalTo':Joi.string().optional(),
-    '#tunnel.owner':Joi.string().optional(),
-    '#wa.timestamp':Joi.string().optional(),
-    date_created: Joi.string().optional()
-  }).required()
-});
-
 // Esquema para o payload com mensagem de texto do WhatsApp
 const whatsappTextPayloadSchema = Joi.object({
-  messaging_product: Joi.string().valid('whatsapp').required(), // Essa propriedade é obrigatória e deve ter o valor 'whatsapp'.
-  to: Joi.string().required(), // Essa propriedade é obrigatória.
+  messaging_product: Joi.string().valid('whatsapp').required(),
+  to: Joi.string().required(),
   text: Joi.object({
-    body: Joi.string().required() // O campo 'body' dentro de 'text' é obrigatório.
-  }).required(),
-  messageID: Joi.string().optional(), // 'messageID' é opcional, pode estar presente ou ausente.
-  token: Joi.string().required(), // Essa propriedade é obrigatória.
-  contract: Joi.string().required() // Essa propriedade é obrigatória.
+    body: Joi.string().min(0).optional() // 'body' pode ser vazio
+  }).optional(),
+  messageID: Joi.string().optional(),
+  token: Joi.string().required(),
+  contract: Joi.string().required()
 });
 
 // Esquema para o payload com imagem do WhatsApp
@@ -64,27 +17,62 @@ const whatsappImagePayloadSchema = Joi.object({
   messaging_product: Joi.string().valid('whatsapp').required(),
   to: Joi.string().required(),
   image: Joi.object({
-    link: Joi.string().uri().required()
+    uri: Joi.string().uri().required(),
+    caption: Joi.string().optional() // 'caption' é opcional
   }).required(),
   messageID: Joi.string().optional(),
   token: Joi.string().required(),
   contract: Joi.string().required()
 });
 
-// Função para validar os payloads
+// Esquema para o payload que pode conter tanto texto quanto imagem
+const whatsappTextImagePayloadSchema = Joi.object({
+  messaging_product: Joi.string().valid('whatsapp').required(),
+  to: Joi.string().required(),
+  text: Joi.object({
+    body: Joi.string().min(0).optional() // 'body' pode ser vazio
+  }).optional(),
+  image: Joi.object({
+    uri: Joi.string().uri().required(),
+    caption: Joi.string().optional()
+  }).required(),
+  messageID: Joi.string().optional(),
+  token: Joi.string().required(),
+  contract: Joi.string().required()
+});
+
+// Esquema para garantir que o 'body' seja vazio se a imagem estiver presente
+const whatsappPayloadSchema = Joi.object({
+  messaging_product: Joi.string().valid('whatsapp').required(),
+  to: Joi.string().required(),
+  text: Joi.object({
+    body: Joi.string().min(0).optional()
+  }).optional(),
+  image: Joi.object({
+    uri: Joi.string().uri().optional(),
+    caption: Joi.string().optional()
+  }).optional(),
+  messageID: Joi.string().optional(),
+  token: Joi.string().required(),
+  contract: Joi.string().required()
+})
+  .custom((value, helpers) => {
+    if (value.image && value.text && value.text.body) {
+      return helpers.error('any.custom');
+    }
+    return value;
+  }, 'Imagem e texto');
+
 function validatePayload(payload) {
   let validationSchema;
 
-   console.log("antes de tratar", payload)
-
-  if (payload.messaging_product === 'whatsapp' && payload.text) {
-    validationSchema = whatsappTextPayloadSchema;
+  // Verificar se há tanto texto quanto imagem no payload
+  if (payload.messaging_product === 'whatsapp' && payload.text && payload.image) {
+    validationSchema = whatsappTextImagePayloadSchema; // Valida o payload com texto e imagem
+  } else if (payload.messaging_product === 'whatsapp' && payload.text) {
+    validationSchema = whatsappTextPayloadSchema; // Valida o payload com texto
   } else if (payload.messaging_product === 'whatsapp' && payload.image) {
-    validationSchema = whatsappImagePayloadSchema;
-  } else if (payload.type === 'text/plain') {
-    validationSchema = textPayloadSchema;
-  } else if (payload.type === 'application/vnd.lime.media-link+json') {
-    validationSchema = mediaLinkPayloadSchema;
+    validationSchema = whatsappImagePayloadSchema; // Valida o payload com imagem
   } else {
     return { error: `Unsupported Media Type: ${payload.messaging_product || payload.type}`, status: 415 };
   }
@@ -93,6 +81,12 @@ function validatePayload(payload) {
   
   if (error) {
     return { error: error.message, status: 400 };
+  }
+
+  // Validação personalizada
+  const customError = whatsappPayloadSchema.validate(payload, { abortEarly: false }).error;
+  if (customError) {
+    return { error: 'Campo "body" não deve ser preenchido se a imagem estiver presente', status: 400 };
   }
 
   return { valid: true };
