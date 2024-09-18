@@ -1,10 +1,12 @@
 const axios = require('axios');
+const path = require('path');
 const MessageDTO = require('../dtos/MessageDTO');
 const Services = require('../services/sendMessage')
 const NodeCache = require('node-cache');
 const configLastroDb = require('../models/v1/config')
 const { ObjectId } = require('mongodb');
 const messageCache = new NodeCache({ stdTTL: 86400 });
+const fs = require('fs');
 
 const receive = async (req, res) => {
 
@@ -37,7 +39,6 @@ const receiveLastro = async (req, res) => {
 
     const { to, text: { body }, contract, token, image } = req.body;
 
-
     try {
 
         const resultApp = await configLastroDb.findById(ObjectId(auth));
@@ -59,7 +60,7 @@ const receiveLastro = async (req, res) => {
     } catch (e) {
 
         console.log(e)
-        return res.status(401).json({ message: 'Unauthorized', error: e})
+        return res.status(401).json({ message: 'Unauthorized', error: e })
     }
 
 
@@ -102,9 +103,38 @@ const getConfigLastro = async (req, res) => {
 
 }
 
+const ImageImob = async (req, res) => {
+
+        const { filename } = req.params;
+
+        const filePath = path.join(__dirname, '../images', filename);
+
+        fs.exists(filePath, (exists) => {
+          if (!exists) {
+            return res.status(404).json({ error: 'Arquivo não encontrado' });
+          }
+ 
+          res.sendFile(filePath, (err) => {
+            if (err) {
+              console.error('Erro ao enviar o arquivo:', err);
+              return res.status(500).json({ error: 'Erro ao enviar o arquivo' });
+            }
+    
+            fs.unlink(filePath, (err) => {
+              if (err) {
+                console.error('Erro ao deletar o arquivo:', err);
+              } else {
+                console.log(`Arquivo ${filename} deletado com sucesso`);
+              }
+            });
+          });
+        });
+};
+
 module.exports = {
     receive,
     receiveLastro,
     configLastro,
-    getConfigLastro
+    getConfigLastro,
+    ImageImob
 }

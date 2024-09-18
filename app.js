@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const config = require('./src/utils/index');
 const configEnv = require('./src/helpers/readConfig');
 const initMongo = require('./src/helpers/connectMongo');
-
+const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
@@ -16,8 +16,14 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors());
 app.use(express.json());
+// Caminho absoluto para o diretório 'images' dentro de 'src/services'
+// const imagesDir = path.join(__dirname, 'src', 'services', 'images');
 
+// // Verificar se o caminho está correto
+// console.log('Servindo imagens de:', imagesDir);
 
+// Servir arquivos estáticos da pasta 'images'
+// app.use('/api/v1/api-parse-lastro/image', express.static(imagesDir));
 configEnv.readEnvFile();
 initMongo.init('models/v1');
 
