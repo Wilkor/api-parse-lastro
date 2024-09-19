@@ -76,9 +76,6 @@ const whatsappImagePayloadSchema = Joi.object({
 const whatsappImageCaptionPayloadSchema = Joi.object({
   messaging_product: Joi.string().valid('whatsapp').required(),
   to: Joi.string().required(),
-  text: Joi.object({
-    body: Joi.string().min(0).optional()
-  }).optional(),
   image: Joi.object({
     uri: Joi.string().uri().required(), 
     caption: Joi.string().optional()
