@@ -37,7 +37,20 @@ const receiveLastro = async (req, res) => {
 
     const auth = req.headers['authorization'];
 
-    const { to, text: { body }, contract, token, image } = req.body;
+    const { to, text, contract, token, image } = req.body;
+
+    // Verifica se o campo 'text' e o campo 'body' dentro de 'text' estão presentes
+    if (!text || !text.body) {
+      return res.status(400).json({ error: 'Campo "body" é obrigatório dentro de "text".' });
+    }
+    
+    // Outras verificações podem ser feitas conforme necessário
+    // Exemplo: Verificar se 'to' é uma string
+    if (typeof to !== 'string') {
+      return res.status(400).json({ error: 'Campo "to" deve ser uma string.' });
+    }
+  
+    const body = text.body
 
     try {
 
