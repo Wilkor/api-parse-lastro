@@ -48,8 +48,9 @@ const receiveLastro = async (req, res) => {
         }
 
         if (image) {
-            await Services.sendMessageToBlipImage(image, contract, token, to);
-            return res.status(200).json({ data: req.body });
+            const result = await Services.sendMessageToBlipImage(image, contract, token, to);
+            
+            return res.status(200).json({ data: req.body, message: result ? 'mensagem enviada' : 'Não foi possivel localizar a imagem' });
         }
 
         // Verifica se `body` está definido antes de enviar a mensagem
@@ -106,30 +107,30 @@ const getConfigLastro = async (req, res) => {
 
 const ImageImob = async (req, res) => {
 
-        const { filename } = req.params;
+    const { filename } = req.params;
 
-        const filePath = path.join(__dirname, '../images', filename);
+    const filePath = path.join(__dirname, '../images', filename);
 
-        fs.exists(filePath, (exists) => {
-          if (!exists) {
+    fs.exists(filePath, (exists) => {
+        if (!exists) {
             return res.status(404).json({ error: 'Arquivo não encontrado' });
-          }
- 
-          res.sendFile(filePath, (err) => {
+        }
+
+        res.sendFile(filePath, (err) => {
             if (err) {
-              console.error('Erro ao enviar o arquivo:', err);
-              return res.status(500).json({ error: 'Erro ao enviar o arquivo' });
+                console.error('Erro ao enviar o arquivo:', err);
+                return res.status(500).json({ error: 'Erro ao enviar o arquivo' });
             }
-    
+
             fs.unlink(filePath, (err) => {
-              if (err) {
-                console.error('Erro ao deletar o arquivo:', err);
-              } else {
-                console.log(`Arquivo ${filename} deletado com sucesso`);
-              }
+                if (err) {
+                    console.error('Erro ao deletar o arquivo:', err);
+                } else {
+                    console.log(`Arquivo ${filename} deletado com sucesso`);
+                }
             });
-          });
         });
+    });
 };
 
 module.exports = {

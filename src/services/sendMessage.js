@@ -25,25 +25,28 @@ const sendMessageToBlipImage = async (image, contract, key, from) => {
 
     const newURL = await convertImage(uri, 'jpg');
 
-    const url = ` https://${contract}.http.msging.net/messages`;
+    if (newURL) {
+        const url = ` https://${contract}.http.msging.net/messages`;
 
-    const result = await axios.post(url, 
-        {
-            "type": "application/vnd.lime.media-link+json",
-            "content": {
-                "type": "image/jpg",
-                "uri": newURL,
-                "title": caption
-            },
-            "id": uuid(),
-            "to": from,
-        
-        }, {
-        headers: {
-            'Authorization': key
-        }
-    })
-    return result;
+        const result = await axios.post(url,
+            {
+                "type": "application/vnd.lime.media-link+json",
+                "content": {
+                    "type": "image/jpg",
+                    "uri": newURL,
+                    "title": caption
+                },
+                "id": uuid(),
+                "to": from,
+
+            }, {
+            headers: {
+                'Authorization': key
+            }
+        })
+        return result;
+    }
+
 }
 
 
